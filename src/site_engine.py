@@ -300,6 +300,12 @@ a.card:hover::before { opacity: 1; }
   .map { min-height: 300px; }
 }
 
+/* ================= «БГИТУ» в подвале: линии вливаются и окрашивают надпись ================= */
+.footer__word { position: relative; }
+.footer__word::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; color: transparent;
+  background: linear-gradient(90deg, var(--text) 0%, var(--accent) 50%, var(--text) 100%); -webkit-background-clip: text; background-clip: text;
+  opacity: calc(var(--fill, 0) * 0.85); clip-path: inset(0 calc((1 - var(--fill, 0)) * 50%)); }
+
 /* ================= Режим съёмки макетов (?shot) ================= */
 html.shot { scroll-behavior: auto; }
 html.shot .hero { min-height: 900px; }
@@ -432,6 +438,9 @@ def parts():
     s = s.replace("  $$('[data-aurora]').forEach(aurora);\n", '')
     s = s.replace("join('');\n      if (p < 1) requestAnimationFrame(tick);\n    })(t0);\n  };\n  const io",
                   "join('');\n      if (p < 1) requestAnimationFrame(tick); else el.style.minWidth = '';\n    })(t0);\n  };\n  const io")
+    # перебор букв — один раз: заголовок и слово наблюдаются одновременно, второй запуск запомнил бы уже перемешанные буквы
+    s = s.replace("  const scramble = (el) => {\n    if (reduce) return;",
+                  "  const scramble = (el) => {\n    if (reduce || el.dataset.scrambled) return;\n    el.dataset.scrambled = '1';")
     s = s.replace("    if (reduce) return (el.textContent = to);\n    const t0 = performance.now();",
                   "    if (reduce || 'plain' in el.dataset) return (el.textContent = to);\n    const t0 = performance.now();")
     s = s.replace("addEventListener('resize', () => innerWidth > 1000 && !menu.hidden && setMenu(false));",
@@ -464,6 +473,7 @@ def page(cur, title, main_html, trail_js, desc=None):
     header = header.replace('<a class="skip" href="#main">К содержимому</a>\n', '<a class="skip" href="#main">К содержимому</a>\n' + extras, 1)
     # футер: разделы → страницы
     sections = ''.join(f'<a href="{h}">{n}</a>' for h, n, k in NAV)
+    footer = footer.replace('<p class="footer__word" aria-hidden="true">БГИТУ</p>', '<p class="footer__word" aria-hidden="true" data-text="БГИТУ">БГИТУ</p>')
     footer = re.sub(r'<div><h2 class="mono">Разделы</h2>.*?</div>', f'<div><h2 class="mono">Разделы</h2><a href="index.html">Главная</a>{sections}<a href="#" data-soon>Личный кабинет</a></div>', footer, count=1, flags=re.S)
     return (head + '<body id="top">\n' + header + main_html + '\n\n' + footer + REVEAL_JS + script + '</body>\n'
             .replace('</body>', '<script>\n' + trail_js + '\n</script>\n' + SECBAR_JS + '</body>') + '</html>\n')

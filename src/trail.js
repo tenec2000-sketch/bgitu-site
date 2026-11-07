@@ -38,7 +38,7 @@
   for (let j = 0, M = 16; j < M; j++) STR.push({ f: j / (M - 1) - 0.5, a: 0.2 + rnd() * 0.6, al: 0.14 + rnd() * 0.4, lw: 0.7 + rnd() * 0.8, fray: rnd() < 0.28, k: rnd() * 100 });
 
   // ---------- путь в координатах документа: свободная лента сверху вниз, за контентом
-  let P = [], HEADS = [], SY = 0, gw = 40, wmax = 30;
+  let P = [], HEADS = [], SY = 0, gw = 40, wmax = 30, WORD = null;
   // несколько лент: толщина, сдвиг головы (доля экрана), свой рисунок пути, смещение по x
   const LINES = /3$/.test(VARIANT)
     ? [{ sc: 1, lag: 0, seed: 0, dx: 0 }, { sc: 0.55, lag: -0.13, seed: 1, dx: 80 }, { sc: 0.38, lag: 0.09, seed: 2, dx: -110 }]
@@ -70,10 +70,19 @@
 
     // дальше — свободное петляние по всей ширине до призыва
     const cta = document.querySelector('.cta'), c = cta ? cta.getBoundingClientRect() : null;
-    const yEnd = c ? c.top + SY + 60 : document.documentElement.scrollHeight;
+    const fw = document.querySelector('.footer__word');
+    const yEnd = c ? c.top + SY + 60 : fw ? fw.getBoundingClientRect().top + SY - 300 : document.documentElement.scrollHeight;
     const last = P[P.length - 1], fx = (y) => clamp(W * 0.5 + (noise(y * 0.0009, 1.3 + CUR.seed * 11.7) - 0.5) * 2 * W * 0.44 + (noise(y * 0.003, 5.2 + CUR.seed * 7.1) - 0.5) * 36, 20, W - 20);
     for (let y = last.y + 4; y < yEnd; y += 4) { const u = fade(clamp((y - last.y) / 420, 0, 1)); push(last.x + (fx(y) - last.x) * u, y); }
-    if (c) { const b = c.bottom + SY, e = P[P.length - 1]; catmull([[e.x, e.y], [e.x + (W / 2 - e.x) * 0.5, b - 200], [W / 2 + CUR.dx * 0.4, b - 64 - CUR.seed * 18]], 50); }
+    // финал: линии вливаются в надпись «БГИТУ» в подвале — каждая в свою часть слова
+    const word = document.querySelector('.footer__word'), wr = word ? word.getBoundingClientRect() : null, e = P[P.length - 1];
+    WORD = null;
+    if (wr) {
+      const wy = wr.top + SY + wr.height * 0.55, wx = wr.left + wr.width * [0.5, 0.2, 0.8][CUR.seed];
+      const mid = c ? [W / 2 + CUR.dx * 0.4, c.bottom + SY - 80] : [(e.x + wx) / 2, (e.y + wy) / 2];
+      catmull([[e.x, e.y], mid, [wx + (mid[0] - wx) * 0.2, wy - wr.height * 0.9], [wx, wy]], 60);
+      WORD = { el: word, top: wr.top + SY, cy: wy };
+    } else if (c) { const b = c.bottom + SY; catmull([[e.x, e.y], [e.x + (W / 2 - e.x) * 0.5, b - 200], [W / 2 + CUR.dx * 0.4, b - 64 - CUR.seed * 18]], 50); }
 
     // движение в покое: путь медленно колышется волной и дрейфует по шуму — линия живёт и без прокрутки
     const AMP = clamp(W * 0.011, 6, 16);
@@ -93,12 +102,15 @@
 
   // ---------- голова следа
   function headIndex() {
-    const kh = SHOT ? Infinity : SMS + H * (0.62 + CUR.lag);   // голова мазка дорастает за сглаженной прокруткой   // в режиме съёмки макета — весь путь
+    // у конца страницы голова догоняет конец пути — иначе линии не доходят до подвала
+    const maxS = document.documentElement.scrollHeight - H, prog = maxS > 0 ? SMS / maxS : 1;
+    const kh = SHOT ? Infinity : SMS + H * (0.62 + CUR.lag) + clamp((prog - 0.8) / 0.2, 0, 1) * H * 0.55;   // голова мазка дорастает за сглаженной прокруткой   // в режиме съёмки макета — весь путь
     let i = 0; while (i < P.length - 1 && P[i + 1].key <= kh) i++;
     const a = P[i], b = P[i + 1];
     let head = { x: a.x, y: a.y, s: a.s };
     if (b && b.key > a.key) { const u = clamp((kh - a.key) / (b.key - a.key), 0, 1); head = { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, s: a.s + (b.s - a.s) * u }; }
     if (!CUR.seed) HEADS.forEach((h) => h.el.classList.toggle('is-lit', head.y >= h.y));
+    if (!CUR.seed && WORD) WORD.el.style.setProperty('--fill', clamp((head.y - (WORD.top - 40)) / (WORD.cy - WORD.top + 40), 0, 1).toFixed(3));   // окраска «БГИТУ»
     return { i, kh, head, done: i >= P.length - 1 };
   }
   const onScreen = (p) => p.y - SY > -120 && p.y - SY < H + 120;
