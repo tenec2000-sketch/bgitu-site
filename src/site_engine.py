@@ -115,6 +115,8 @@ html { scroll-padding-top: calc(var(--head-h) + 96px); }
 .sec-head { align-items: baseline; }
 .sec-head h2 { white-space: nowrap; color: var(--text); }
 .sec-head > :last-child { text-align: right; }
+@media (max-width: 600px) { .sec-head { flex-wrap: wrap; row-gap: 6px; } .sec-head > :last-child:not(h2) { text-align: left; }
+  .sec-head h2 { white-space: normal; } .btn { max-width: 100%; white-space: normal; text-align: center; } }
 .sec-head h2::before { content: ""; display: inline-block; flex: none; width: 7px; height: 7px; margin-right: 0.9em; vertical-align: 0.1em; border-radius: 50%;
   background: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
 /* плашка = точная копия заголовка раздела: встаёт на его место пиксель в пиксель, следующий заголовок выталкивает её вверх */
@@ -135,6 +137,9 @@ main section.section[id] { scroll-margin-top: calc(34px - 96px - clamp(72px, 11v
 .js .split .w { display: inline-block; opacity: 0; transform: translateY(0.45em); transition: opacity 0.9s var(--ease), transform 0.9s var(--ease);
   transition-delay: calc(var(--d, 0) * 90ms + var(--w) * 40ms); }
 .js .split.is-in .w { opacity: 1; transform: none; }
+/* узкий экран: длинное слово («программированию») или акцентная фраза переносятся, а не вылезают за край */
+.hero__title, .page-hero h1, .statement, .cta h2, .feature h2 { overflow-wrap: anywhere; hyphens: auto; }
+.split .w { max-width: 100%; }
 .js [data-reveal].split { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js .split .w { opacity: 1; transform: none; } }
 
@@ -300,11 +305,19 @@ a.card:hover::before { opacity: 1; }
   .map { min-height: 300px; }
 }
 
-/* ================= «БГИТУ» в подвале: линии вливаются и окрашивают надпись ================= */
-.footer__word { position: relative; }
+/* ================= «БГИТУ» в подвале: линии вливаются, каждая заливает свою часть своим цветом ================= */
+@property --f0 { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --f1 { syntax: '<number>'; inherits: true; initial-value: 0; }
+@property --f2 { syntax: '<number>'; inherits: true; initial-value: 0; }
+.footer__word { position: relative; color: color-mix(in oklab, var(--bg), var(--brand-ink) 7%);   /* непрозрачные буквы: линии уходят за них */
+  transition: --f0 2s var(--ease), --f1 2s var(--ease) 0.25s, --f2 2s var(--ease) 0.5s; }   /* по очереди: центр, слева, справа */
+/* три пятна цвета растут из точек входа линий: красная — слева, тёмная — в центре, серая — справа */
 .footer__word::after { content: attr(data-text); position: absolute; inset: 0; pointer-events: none; color: transparent;
-  background: linear-gradient(90deg, var(--text) 0%, var(--accent) 50%, var(--text) 100%); -webkit-background-clip: text; background-clip: text;
-  opacity: calc(var(--fill, 0) * 0.85); clip-path: inset(0 calc((1 - var(--fill, 0)) * 50%)); }
+  background:
+    radial-gradient(ellipse calc(var(--f1) * 34% + 0.1%) calc(var(--f1) * 150% + 0.1%) at var(--x1, 20%) var(--y1, 60%), var(--accent) 55%, transparent 100%),
+    radial-gradient(ellipse calc(var(--f2) * 34% + 0.1%) calc(var(--f2) * 150% + 0.1%) at var(--x2, 80%) var(--y2, 60%), color-mix(in oklab, var(--brand-ink) 45%, var(--bg)) 55%, transparent 100%),
+    radial-gradient(ellipse calc(var(--f0) * 34% + 0.1%) calc(var(--f0) * 150% + 0.1%) at var(--x0, 50%) var(--y0, 60%), var(--text) 55%, transparent 100%);
+  -webkit-background-clip: text; background-clip: text; }   /* после background: иначе shorthand сбрасывает обрезку по буквам */
 
 /* ================= Режим съёмки макетов (?shot) ================= */
 html.shot { scroll-behavior: auto; }

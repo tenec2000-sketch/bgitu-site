@@ -210,8 +210,14 @@ def page(cur, title, main_html, trail_js, desc=None):
                                                       ('science.html', 'Наука'), ('news.html', 'Новости'), ('sveden.html', 'Сведения об ОО'),
                                                       ('sitemap.html', 'Карта сайта'), ('lk.html', 'Личный кабинет')])
     html = re.sub(r'<div><h2 class="mono">Разделы</h2>.*?</div>', f'<div><h2 class="mono">Разделы</h2>{cols}</div>', html, count=1, flags=re.S)
+    # это и есть основной сайт: вместо «Официальный сайт bgitu.ru» — сервисы и соцсети, без подписи «макет»
     soc = '<div class="soc">' + ''.join(f'<a href="{u}" target="_blank" rel="noopener">{n} ↗</a>' for n, u in SOCIAL) + '</div>'
-    html = re.sub(r'(<div><h2 class="mono">Официальный сайт</h2>.*?)</div>', lambda m: m.group(1) + soc + '<a href="privacy.html">Политика ПДн</a></div>', html, count=1, flags=re.S)
+    services = ''.join(f'<a href="{h}" data-s="Сервис" data-t="{n}">{n}</a>' for h, n in [('lk.html', 'Личный кабинет'), ('eos.html', 'ЭОС и Moodle'), ('schedule.html', 'Расписание'),
+                                                                                         ('programs.html', 'Направления подготовки'), ('library.html', 'Библиотека')])
+    html = re.sub(r'<div><h2 class="mono">Официальный сайт</h2>.*?</div>', lambda m: f'<div><h2 class="mono">Сервисы и соцсети</h2>{services}{soc}</div>', html, count=1, flags=re.S)
+    html = re.sub(r'(<div class="footer__bottom mono"><span>© <span id="year">\d+</span> БГИТУ</span>)<span>.*?</span>',
+                  lambda m: m.group(1).replace('БГИТУ</span>', 'ФГБОУ ВО «Брянский государственный инженерно-технологический университет»</span>') +
+                  '<span><a href="privacy.html">Политика ПДн</a> · <a href="sveden.html">Сведения об ОО</a> · <a href="sitemap.html">Карта сайта</a></span>', html, count=1, flags=re.S)
     html = html.replace('<p class="mono dim">режим работы 8:30–18:00</p>', '<p class="mono dim">режим работы 8:30–18:00</p><p class="mono dim week" data-week></p>', 1)
     # PWA, стили, скрипты, индекс страниц для поиска, баннер cookies
     html = html.replace('</head>', PWA_HEAD + '</head>', 1)

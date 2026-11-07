@@ -45,6 +45,45 @@
     : [{ sc: 1, lag: 0, seed: 0, dx: 0 }];
   let CUR = LINES[0];
 
+  // ---------- форма букв «БГИТУ»: слово рисуется тем же шрифтом на скрытом холсте, по маске ищем ближайшую точку буквы
+  let GM = null, ANCH = null;
+  function glyphMask(word, wr) {
+    const key = Math.round(wr.width) + 'x' + Math.round(wr.height) + (document.fonts ? document.fonts.status : '');
+    if (GM && GM.key === key) return GM;
+    const cs = getComputedStyle(word), fs = parseFloat(cs.fontSize), lh = parseFloat(cs.lineHeight) || fs;
+    const c = document.createElement('canvas'); c.width = Math.max(1, Math.ceil(wr.width)); c.height = Math.max(1, Math.ceil(wr.height));
+    const g = c.getContext('2d', { willReadFrequently: true });
+    g.font = `${cs.fontWeight} ${fs}px ${cs.fontFamily}`;
+    if ('letterSpacing' in g) g.letterSpacing = cs.letterSpacing;
+    const text = word.dataset.text || word.textContent.trim(), m = g.measureText(text);
+    const fa = m.fontBoundingBoxAscent || m.actualBoundingBoxAscent, fd = m.fontBoundingBoxDescent || m.actualBoundingBoxDescent;
+    g.textBaseline = 'alphabetic'; g.fillStyle = '#000';
+    // точное место текста на странице: Range даёт рамку строки (слева/справа и верх = базовая линия − верхний вынос)
+    const node = [...word.childNodes].find((n) => n.nodeType === 3 && n.textContent.trim());
+    let x0 = (c.width - m.width) / 2, base = (lh - (fa + fd)) / 2 + fa, sx = 1;
+    if (node) { const rg = document.createRange(); rg.selectNodeContents(node); const rr = rg.getBoundingClientRect();
+      if (rr.width) { x0 = rr.left - wr.left; base = rr.top - wr.top + fa; sx = rr.width / m.width; } }
+    g.setTransform(sx, 0, 0, 1, x0, 0); g.fillText(text, 0, base);
+    GM = { key, w: c.width, h: c.height, d: g.getImageData(0, 0, c.width, c.height).data, cache: {} };
+    return GM;
+  }
+  function glyphAnchor(word, wr, fx, fy) {
+    const M = glyphMask(word, wr), tx = Math.round(M.w * fx), ty = Math.round(M.h * fy), ck = fx + ':' + fy;
+    if (M.cache[ck]) return M.cache[ck];
+    const on = (x, y) => x >= 0 && y >= 0 && x < M.w && y < M.h && M.d[(y * M.w + x) * 4 + 3] > 128;
+    let best = null, bd = 1e12;
+    for (let r = 0; r < 300 && !best; r += 2)
+      for (let dy = -r; dy <= r; dy += 2) for (let dx = -r; dx <= r; dx += 2) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== r || !on(tx + dx, ty + dy)) continue;
+        const d = dx * dx + dy * dy; if (d < bd) { bd = d; best = { x: tx + dx, y: ty + dy }; }
+      }
+    if (best && (best.x !== tx || best.y !== ty)) {   // утопить конец внутрь буквы, чтобы не торчал из кромки
+      const dx = best.x - tx, dy = best.y - ty, l = Math.hypot(dx, dy) || 1;
+      for (let k = 12; k > 0; k -= 2) { const x = Math.round(best.x + dx / l * k), y = Math.round(best.y + dy / l * k); if (on(x, y)) { best = { x, y }; break; } }
+    }
+    return (M.cache[ck] = best || { x: tx, y: ty });
+  }
+
   function build(T = 0) {
     SY = scrollY; P = [];
     const cont = document.querySelector('.container').getBoundingClientRect();
@@ -76,18 +115,24 @@
     for (let y = last.y + 4; y < yEnd; y += 4) { const u = fade(clamp((y - last.y) / 420, 0, 1)); push(last.x + (fx(y) - last.x) * u, y); }
     // финал: линии вливаются в надпись «БГИТУ» в подвале — каждая в свою часть слова
     const word = document.querySelector('.footer__word'), wr = word ? word.getBoundingClientRect() : null, e = P[P.length - 1];
-    WORD = null;
+    WORD = null; ANCH = null;
     if (wr) {
-      const wy = wr.top + SY + wr.height * 0.55, wx = wr.left + wr.width * [0.5, 0.2, 0.8][CUR.seed];
+      const g = glyphAnchor(word, wr, [0.5, 0.2, 0.8][CUR.seed], 0.55);   // ближайшая к точке входа точка буквы
+      const wx = wr.left + g.x, wy = wr.top + SY + g.y;
       const mid = c ? [W / 2 + CUR.dx * 0.4, c.bottom + SY - 80] : [(e.x + wx) / 2, (e.y + wy) / 2];
-      catmull([[e.x, e.y], mid, [wx + (mid[0] - wx) * 0.2, wy - wr.height * 0.9], [wx, wy]], 60);
-      WORD = { el: word, top: wr.top + SY, cy: wy };
+      // точка подхода — на ~половине пути от mid: иначе на узком экране (низкие буквы) сплайн проскакивает под слово и возвращается крючком
+      const ay = wy - Math.max(wr.height * 0.9, (wy - mid[1]) * 0.45);
+      catmull([[e.x, e.y], mid, [wx + (mid[0] - wx) * 0.2, ay], [wx, wy]], 60);
+      WORD = { el: word, top: wr.top + SY, cy: wy }; ANCH = { x: wx, y: wy };
+      word.style.setProperty('--x' + CUR.seed, (g.x / wr.width * 100).toFixed(1) + '%');
+      word.style.setProperty('--y' + CUR.seed, (g.y / wr.height * 100).toFixed(1) + '%');
     } else if (c) { const b = c.bottom + SY; catmull([[e.x, e.y], [e.x + (W / 2 - e.x) * 0.5, b - 200], [W / 2 + CUR.dx * 0.4, b - 64 - CUR.seed * 18]], 50); }
 
     // движение в покое: путь медленно колышется волной и дрейфует по шуму — линия живёт и без прокрутки
     const AMP = clamp(W * 0.011, 6, 16);
     for (const q of P) {
-      const env = clamp((q.y + 80) / 260, 0, 1);   // у верхнего края старт стоит на месте
+      let env = clamp((q.y + 80) / 260, 0, 1);   // у верхнего края старт стоит на месте
+      if (ANCH) env *= fade(clamp(Math.hypot(q.x - ANCH.x, q.y - ANCH.y) / 600, 0, 1));   // у буквы линия закреплена
       q.x = clamp(q.x + env * (Math.sin(T * 0.55 + q.y * 0.0045 + CUR.seed * 2.1) * AMP
                              + (noise(q.y * 0.002 + T * 0.04, 7 + CUR.seed * 3) - 0.5) * AMP * 1.4), 20, W - 20);
     }
@@ -104,13 +149,15 @@
   function headIndex() {
     // у конца страницы голова догоняет конец пути — иначе линии не доходят до подвала
     const maxS = document.documentElement.scrollHeight - H, prog = maxS > 0 ? SMS / maxS : 1;
-    const kh = SHOT ? Infinity : SMS + H * (0.62 + CUR.lag) + clamp((prog - 0.8) / 0.2, 0, 1) * H * 0.55;   // голова мазка дорастает за сглаженной прокруткой   // в режиме съёмки макета — весь путь
+    const kh = SHOT ? Infinity : SMS + H * (0.62 + CUR.lag) + clamp((prog - 0.9) / 0.1, 0, 1) * H * 0.55;   // голова мазка дорастает за сглаженной прокруткой   // в режиме съёмки макета — весь путь
     let i = 0; while (i < P.length - 1 && P[i + 1].key <= kh) i++;
     const a = P[i], b = P[i + 1];
     let head = { x: a.x, y: a.y, s: a.s };
     if (b && b.key > a.key) { const u = clamp((kh - a.key) / (b.key - a.key), 0, 1); head = { x: a.x + (b.x - a.x) * u, y: a.y + (b.y - a.y) * u, s: a.s + (b.s - a.s) * u }; }
     if (!CUR.seed) HEADS.forEach((h) => h.el.classList.toggle('is-lit', head.y >= h.y));
-    if (!CUR.seed && WORD) WORD.el.style.setProperty('--fill', clamp((head.y - (WORD.top - 40)) / (WORD.cy - WORD.top + 40), 0, 1).toFixed(3));   // окраска «БГИТУ»
+    // линия дошла до «БГИТУ» — её часть слова заливается её цветом (анимация в CSS через transition)
+    if (WORD) { const r = WORD.el.getBoundingClientRect(), seen = r.bottom <= H - 8 && r.top >= 0;
+      WORD.el.style.setProperty('--f' + CUR.seed, i >= P.length - 1 && (seen || SHOT) ? '1' : '0'); }
     return { i, kh, head, done: i >= P.length - 1 };
   }
   const onScreen = (p) => p.y - SY > -120 && p.y - SY < H + 120;
@@ -219,7 +266,7 @@
       ctx.fillStyle = ink(0.7); ctx.beginPath(); ctx.arc(x + nx * o, y + ny * o, (0.6 + hash(i, 3) * 2.2) * TUSH_W, 0, 7); ctx.fill();
       if (hash(i, 6) > 0.6) { ctx.beginPath(); ctx.arc(x + nx * o + (hash(i, 7) - 0.5) * 12, y + ny * o + (hash(i, 8) - 0.5) * 12, 0.55, 0, 7); ctx.fill(); }
     }
-    if (done) { const p = P[P.length - 1]; ctx.save(); ctx.shadowColor = acc(0.9); ctx.shadowBlur = 18; ctx.fillStyle = acc(1); ctx.beginPath(); ctx.arc(p.x, p.y - SY, (4 + Math.sin(t * 2) * 0.8) * TUSH_W, 0, 7); ctx.fill(); ctx.restore(); }
+    if (done && !WORD) { const p = P[P.length - 1]; ctx.save(); ctx.shadowColor = acc(0.9); ctx.shadowBlur = 18; ctx.fillStyle = acc(1); ctx.beginPath(); ctx.arc(p.x, p.y - SY, (4 + Math.sin(t * 2) * 0.8) * TUSH_W, 0, 7); ctx.fill(); ctx.restore(); }
     else { ctx.save(); ctx.shadowColor = (CUR.seed === 1 ? acc : ink)(0.9); ctx.shadowBlur = 14; ctx.fillStyle = (CUR.seed === 1 ? acc : ink)(0.95); ctx.beginPath(); ctx.arc(head.x, head.y - SY, 2.6 * TUSH_W, 0, 7); ctx.fill(); ctx.restore(); }
   }
 
