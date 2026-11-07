@@ -140,6 +140,10 @@ main section.section[id] { scroll-margin-top: calc(34px - 96px - clamp(72px, 11v
 /* узкий экран: длинное слово («программированию») или акцентная фраза переносятся, а не вылезают за край */
 .hero__title, .page-hero h1, .statement, .cta h2, .feature h2 { overflow-wrap: anywhere; hyphens: auto; }
 .split .w { max-width: 100%; }
+.hl[data-scramble] { white-space: normal; }
+.hero__title .hl[data-scramble] { white-space: nowrap; }
+@media (max-width: 600px) { main .page-hero h1 { font-size: min(2.5rem, 8vw); } main .feature h2 { font-size: min(1.75rem, 5.8vw); } }
+@media (max-width: 360px) { main .page-hero h1 { font-size: 7vw; } main .feature h2 { font-size: 5.2vw; } main .cta h2 { font-size: 7.4vw; } }
 .js [data-reveal].split { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js .split .w { opacity: 1; transform: none; } }
 
@@ -442,6 +446,29 @@ document.querySelectorAll('[data-filter]').forEach((box) => {
 """
 
 
+# перебор букв акцентной фразы (как «с 1930 года»). Каждое слово — в коробке своей исходной ширины:
+# случайные буквы шире настоящих, без коробок фраза перескакивала бы на лишнюю строку. Запуск один раз:
+# заголовок и фраза наблюдаются одновременно, второй запуск запомнил бы уже перемешанные буквы.
+SCRAMBLE_JS = r"""  const scramble = (el) => {
+    if (reduce || el.dataset.scrambled) return;
+    el.dataset.scrambled = '1';
+    const text = el.textContent, abc = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ0123456789', t0 = performance.now();
+    const nodes = text.split(/(\s+)/).filter(Boolean).map((part) => {
+      if (/^\s+$/.test(part)) return document.createTextNode(part);
+      const b = document.createElement('span'); b.textContent = part; b.style.cssText = 'display:inline-block;white-space:nowrap;overflow:clip;overflow-clip-margin:0.12em'; return b; });
+    el.textContent = ''; el.append(...nodes);
+    const boxes = nodes.filter((n) => n.nodeType === 1);
+    boxes.map((b) => b.offsetWidth).forEach((w, i) => { boxes[i].style.width = w + 'px'; });
+    let at = 0; const words = boxes.map((b) => { const w = { b, s: b.textContent, at }; at += w.s.length; return w; });
+    (function tick(t) {
+      const p = Math.min((t - t0) / 900, 1), n = p * at;
+      words.forEach((w) => { w.b.textContent = [...w.s].map((c, i) => (w.at + i < n ? c : abc[(Math.random() * abc.length) | 0])).join(''); });
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = text;
+    })(t0);
+  };
+"""
+
+
 # ---------------------------------------------------------------- сборка страницы
 def parts():
     s = SRC
@@ -449,11 +476,7 @@ def parts():
     s = s.replace('  <canvas class="aurora" data-aurora aria-hidden="true"></canvas>\n', '')
     s = s.replace('  <canvas class="aurora" data-aurora data-seed="2.7" aria-hidden="true"></canvas>\n', '')
     s = s.replace("  $$('[data-aurora]').forEach(aurora);\n", '')
-    s = s.replace("join('');\n      if (p < 1) requestAnimationFrame(tick);\n    })(t0);\n  };\n  const io",
-                  "join('');\n      if (p < 1) requestAnimationFrame(tick); else el.style.minWidth = '';\n    })(t0);\n  };\n  const io")
-    # перебор букв — один раз: заголовок и слово наблюдаются одновременно, второй запуск запомнил бы уже перемешанные буквы
-    s = s.replace("  const scramble = (el) => {\n    if (reduce) return;",
-                  "  const scramble = (el) => {\n    if (reduce || el.dataset.scrambled) return;\n    el.dataset.scrambled = '1';")
+    s = s[:s.index('  const scramble = (el) => {')] + SCRAMBLE_JS + s[s.index('  const io = new IntersectionObserver'):]
     s = s.replace("    if (reduce) return (el.textContent = to);\n    const t0 = performance.now();",
                   "    if (reduce || 'plain' in el.dataset) return (el.textContent = to);\n    const t0 = performance.now();")
     s = s.replace("addEventListener('resize', () => innerWidth > 1000 && !menu.hidden && setMenu(false));",
@@ -486,6 +509,8 @@ def page(cur, title, main_html, trail_js, desc=None):
     header = header.replace('<a class="skip" href="#main">К содержимому</a>\n', '<a class="skip" href="#main">К содержимому</a>\n' + extras, 1)
     # футер: разделы → страницы
     sections = ''.join(f'<a href="{h}">{n}</a>' for h, n, k in NAV)
+    # перебор букв, как у «с 1930 года», — на акцентной фразе каждого ключевого заголовка
+    main_html = main_html.replace('<span class="hl">', '<span class="hl" data-scramble>')
     footer = footer.replace('<p class="footer__word" aria-hidden="true">БГИТУ</p>', '<p class="footer__word" aria-hidden="true" data-text="БГИТУ">БГИТУ</p>')
     footer = re.sub(r'<div><h2 class="mono">Разделы</h2>.*?</div>', f'<div><h2 class="mono">Разделы</h2><a href="index.html">Главная</a>{sections}<a href="#" data-soon>Личный кабинет</a></div>', footer, count=1, flags=re.S)
     return (head + '<body id="top">\n' + header + main_html + '\n\n' + footer + REVEAL_JS + script + '</body>\n'

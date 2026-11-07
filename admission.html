@@ -571,6 +571,10 @@ main section.section[id] { scroll-margin-top: calc(34px - 96px - clamp(72px, 11v
 /* узкий экран: длинное слово («программированию») или акцентная фраза переносятся, а не вылезают за край */
 .hero__title, .page-hero h1, .statement, .cta h2, .feature h2 { overflow-wrap: anywhere; hyphens: auto; }
 .split .w { max-width: 100%; }
+.hl[data-scramble] { white-space: normal; }
+.hero__title .hl[data-scramble] { white-space: nowrap; }
+@media (max-width: 600px) { main .page-hero h1 { font-size: min(2.5rem, 8vw); } main .feature h2 { font-size: min(1.75rem, 5.8vw); } }
+@media (max-width: 360px) { main .page-hero h1 { font-size: 7vw; } main .feature h2 { font-size: 5.2vw; } main .cta h2 { font-size: 7.4vw; } }
 .js [data-reveal].split { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js .split .w { opacity: 1; transform: none; } }
 
@@ -891,7 +895,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
   <div class="container">
     <nav class="crumbs mono" aria-label="Вы здесь"><a href="index.html">Главная</a><span aria-hidden="true">/</span><span aria-current="page">Поступление</span></nav>
     <p class="tag mono"><i></i>Приёмная комиссия</p>
-    <h1 id="ph">Поступление <span class="hl">в БГИТУ</span></h1>
+    <h1 id="ph">Поступление <span class="hl" data-scramble>в БГИТУ</span></h1>
     <p class="page-hero__lead">Четыре шага от выбора направления до приказа о зачислении. Приёмная комиссия поможет на каждом.</p><div class="hero__cta"><a class="btn btn--accent btn--lg" href="#dirs">Выбрать направление <span aria-hidden="true">↓</span></a><a class="btn btn--ghost btn--lg" href="tel:+74832649912">Позвонить</a></div>
   </div>
 </section>
@@ -899,7 +903,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
 <section class="section" id="steps" aria-labelledby="steps-h">
   <div class="container">
     <header class="sec-head" data-reveal><h2 class="mono" id="steps-h">01 — Как поступить</h2><span class="mono dim">4 шага</span></header>
-    <div class="split-layout"><div class="sticky"><h3 class="big">От заявления до <span class="hl">зачисления</span></h3><p class="lead-2">Подать документы можно лично или онлайн. Списки и приказы публикуются на сайте.</p></div><div><ol class="steps">
+    <div class="split-layout"><div class="sticky"><h3 class="big">От заявления до <span class="hl" data-scramble>зачисления</span></h3><p class="lead-2">Подать документы можно лично или онлайн. Списки и приказы публикуются на сайте.</p></div><div><ol class="steps">
           <li data-reveal id="step-1"><span class="step-n">01</span><div><h4>Выберите направление</h4><p>Бакалавриат и специалитет: информационные системы, строительство, лесное дело, транспорт, экономика, экология и безопасность. Список — ниже.</p></div></li>
           <li data-reveal id="step-2"><span class="step-n">02</span><div><h4>Подайте документы</h4><p>Лично в приёмной комиссии — пр-т Станке Димитрова, 3, ауд. 216 (пн–пт 9:00–17:00, сб 9:00–13:00) или онлайн через «Госуслуги».</p></div></li>
           <li data-reveal id="step-3"><span class="step-n">03</span><div><h4>Следите за списками</h4><p>Конкурсные списки публикуются на сайте университета — оставайтесь на связи с приёмной комиссией.</p></div></li>
@@ -935,7 +939,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
 <section class="section section--raised" id="docs" aria-labelledby="docs-h">
   <div class="container">
     <header class="sec-head" data-reveal><h2 class="mono" id="docs-h">04 — Документы</h2><span class="mono dim">для подачи заявления</span></header>
-    <div class="split-layout"><div class="sticky"><h3 class="big">Что взять <span class="hl">с собой</span></h3><p class="lead-2">Точный перечень и сроки — в Правилах приёма на текущий год.</p></div><ul class="deps"><li><div><h3>Документ, удостоверяющий личность</h3></div><div class="c"><span>Паспорт гражданина РФ или иной документ</span></div></li><li><div><h3>Документ об образовании</h3></div><div class="c"><span>Аттестат, диплом СПО или диплом о высшем образовании</span></div></li><li><div><h3>СНИЛС</h3></div><div class="c"><span>При наличии</span></div></li><li><div><h3>Документы об особых правах</h3></div><div class="c"><span>Если поступаете на особых условиях — при наличии</span></div></li><li><div><h3>Документы об индивидуальных достижениях</h3></div><div class="c"><span>Дают дополнительные баллы — при наличии</span></div></li></ul></div>
+    <div class="split-layout"><div class="sticky"><h3 class="big">Что взять <span class="hl" data-scramble>с собой</span></h3><p class="lead-2">Точный перечень и сроки — в Правилах приёма на текущий год.</p></div><ul class="deps"><li><div><h3>Документ, удостоверяющий личность</h3></div><div class="c"><span>Паспорт гражданина РФ или иной документ</span></div></li><li><div><h3>Документ об образовании</h3></div><div class="c"><span>Аттестат, диплом СПО или диплом о высшем образовании</span></div></li><li><div><h3>СНИЛС</h3></div><div class="c"><span>При наличии</span></div></li><li><div><h3>Документы об особых правах</h3></div><div class="c"><span>Если поступаете на особых условиях — при наличии</span></div></li><li><div><h3>Документы об индивидуальных достижениях</h3></div><div class="c"><span>Дают дополнительные баллы — при наличии</span></div></li></ul></div>
   </div>
 </section>
 
@@ -956,7 +960,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
 <section class="cta" aria-labelledby="cta-h">
   <div class="container">
     <p class="mono dim">БГИТУ · Брянск · с 1930 года</p>
-    <h2 id="cta-h">Остались вопросы? <span class="hl">Позвоните</span></h2>
+    <h2 id="cta-h">Остались вопросы? <span class="hl" data-scramble>Позвоните</span></h2>
     <div class="hero__cta"><a class="btn btn--accent btn--lg" href="tel:+74832649912">+7 (4832) 64-99-12</a><a class="btn btn--ghost btn--lg" href="mailto:priem@bgitu.ru">priem@bgitu.ru</a></div>
   </div>
 </section>
@@ -1073,11 +1077,17 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
     if (reduce || el.dataset.scrambled) return;
     el.dataset.scrambled = '1';
     const text = el.textContent, abc = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ0123456789', t0 = performance.now();
-    el.style.minWidth = el.offsetWidth + 'px';
+    const nodes = text.split(/(\s+)/).filter(Boolean).map((part) => {
+      if (/^\s+$/.test(part)) return document.createTextNode(part);
+      const b = document.createElement('span'); b.textContent = part; b.style.cssText = 'display:inline-block;white-space:nowrap;overflow:clip;overflow-clip-margin:0.12em'; return b; });
+    el.textContent = ''; el.append(...nodes);
+    const boxes = nodes.filter((n) => n.nodeType === 1);
+    boxes.map((b) => b.offsetWidth).forEach((w, i) => { boxes[i].style.width = w + 'px'; });
+    let at = 0; const words = boxes.map((b) => { const w = { b, s: b.textContent, at }; at += w.s.length; return w; });
     (function tick(t) {
-      const p = Math.min((t - t0) / 900, 1);
-      el.textContent = [...text].map((c, i) => (c === ' ' || i < p * text.length ? c : abc[(Math.random() * abc.length) | 0])).join('');
-      if (p < 1) requestAnimationFrame(tick); else el.style.minWidth = '';
+      const p = Math.min((t - t0) / 900, 1), n = p * at;
+      words.forEach((w) => { w.b.textContent = [...w.s].map((c, i) => (w.at + i < n ? c : abc[(Math.random() * abc.length) | 0])).join(''); });
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = text;
     })(t0);
   };
   const io = new IntersectionObserver((entries) => entries.forEach((e) => {

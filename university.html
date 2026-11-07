@@ -571,6 +571,10 @@ main section.section[id] { scroll-margin-top: calc(34px - 96px - clamp(72px, 11v
 /* узкий экран: длинное слово («программированию») или акцентная фраза переносятся, а не вылезают за край */
 .hero__title, .page-hero h1, .statement, .cta h2, .feature h2 { overflow-wrap: anywhere; hyphens: auto; }
 .split .w { max-width: 100%; }
+.hl[data-scramble] { white-space: normal; }
+.hero__title .hl[data-scramble] { white-space: nowrap; }
+@media (max-width: 600px) { main .page-hero h1 { font-size: min(2.5rem, 8vw); } main .feature h2 { font-size: min(1.75rem, 5.8vw); } }
+@media (max-width: 360px) { main .page-hero h1 { font-size: 7vw; } main .feature h2 { font-size: 5.2vw; } main .cta h2 { font-size: 7.4vw; } }
 .js [data-reveal].split { opacity: 1; transform: none; }
 @media (prefers-reduced-motion: reduce) { .js .split .w { opacity: 1; transform: none; } }
 
@@ -891,7 +895,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
   <div class="container">
     <nav class="crumbs mono" aria-label="Вы здесь"><a href="index.html">Главная</a><span aria-hidden="true">/</span><span aria-current="page">Университет</span></nav>
     <p class="tag mono"><i></i>Об университете</p>
-    <h1 id="ph">Инженерная школа Брянска <span class="hl">с 1930 года</span></h1>
+    <h1 id="ph">Инженерная школа Брянска <span class="hl" data-scramble>с 1930 года</span></h1>
     <p class="page-hero__lead">БГИТУ вырос из лесотехнического института в многопрофильный университет: три института, факультет общенаучной подготовки, колледж и военный учебный центр.</p><div class="meta-row"><span>Ректор — <b>Егорушкин В. А.</b></span><span>г. Брянск, пр-т Станке Димитрова, 3</span><a href="#history">История ↓</a></div>
   </div>
 </section>
@@ -911,7 +915,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
 <section class="section section--raised" id="history" aria-labelledby="history-h">
   <div class="container">
     <header class="sec-head" data-reveal><h2 class="mono" id="history-h">02 — История</h2><span class="mono dim">девять десятилетий</span></header>
-    <div class="split-layout"><div class="sticky"><h3 class="big">От лесного института к <span class="hl">инженерному университету</span></h3><p class="lead-2">Профиль менялся вместе с регионом: лес, затем строительство и транспорт, сегодня — цифровая экономика и экология.</p></div><ol class="vtl"><li><time>1930</time><div><b>Лесотехнический институт</b><p>Дата создания — 3 июля 1930 года (сведения bgitu.ru); занятия начались 25 января 1931-го.</p></div></li><li><time>1933</time><div><b>Брянский лесной институт</b><p>Первое переименование — институт закрепляет лесной профиль.</p></div></li><li><time>1940</time><div><b>Брянский лесохозяйственный институт</b><p>Подготовка специалистов лесного хозяйства для всей страны.</p></div></li><li><time>1941–1944</time><div><b>Эвакуация</b><p>Институт работает в г. Советске Кировской области; 19 июня 1944 года занятия возобновляются в Брянске.</p></div></li><li><time>1960</time><div><b>Брянский технологический институт</b><p>Институт становится многопрофильным политехническим вузом.</p></div></li><li><time>1980</time><div><b>Орден Трудового Красного Знамени</b><p>Награда вручена 5 августа 1980 года.</p></div></li><li><time>1995</time><div><b>Инженерно-технологическая академия</b><p>Брянская государственная инженерно-технологическая академия.</p></div></li><li><time>2015</time><div><b>Университет — БГИТУ</b><p>С 16 июля 2015 года — Брянский государственный инженерно-технологический университет.</p></div></li><li><time>2016</time><div><b>Новая структура</b><p>Сформированы три института и факультет общенаучной подготовки.</p></div></li><li><time>2021</time><div><b>Военный учебный центр</b><p>Создан распоряжением Правительства РФ № 3551-р от 11 декабря 2021 года.</p></div></li></ol></div>
+    <div class="split-layout"><div class="sticky"><h3 class="big">От лесного института к <span class="hl" data-scramble>инженерному университету</span></h3><p class="lead-2">Профиль менялся вместе с регионом: лес, затем строительство и транспорт, сегодня — цифровая экономика и экология.</p></div><ol class="vtl"><li><time>1930</time><div><b>Лесотехнический институт</b><p>Дата создания — 3 июля 1930 года (сведения bgitu.ru); занятия начались 25 января 1931-го.</p></div></li><li><time>1933</time><div><b>Брянский лесной институт</b><p>Первое переименование — институт закрепляет лесной профиль.</p></div></li><li><time>1940</time><div><b>Брянский лесохозяйственный институт</b><p>Подготовка специалистов лесного хозяйства для всей страны.</p></div></li><li><time>1941–1944</time><div><b>Эвакуация</b><p>Институт работает в г. Советске Кировской области; 19 июня 1944 года занятия возобновляются в Брянске.</p></div></li><li><time>1960</time><div><b>Брянский технологический институт</b><p>Институт становится многопрофильным политехническим вузом.</p></div></li><li><time>1980</time><div><b>Орден Трудового Красного Знамени</b><p>Награда вручена 5 августа 1980 года.</p></div></li><li><time>1995</time><div><b>Инженерно-технологическая академия</b><p>Брянская государственная инженерно-технологическая академия.</p></div></li><li><time>2015</time><div><b>Университет — БГИТУ</b><p>С 16 июля 2015 года — Брянский государственный инженерно-технологический университет.</p></div></li><li><time>2016</time><div><b>Новая структура</b><p>Сформированы три института и факультет общенаучной подготовки.</p></div></li><li><time>2021</time><div><b>Военный учебный центр</b><p>Создан распоряжением Правительства РФ № 3551-р от 11 декабря 2021 года.</p></div></li></ol></div>
   </div>
 </section>
 
@@ -939,7 +943,7 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
 <section class="cta" aria-labelledby="cta-h">
   <div class="container">
     <p class="mono dim">БГИТУ · Брянск · с 1930 года</p>
-    <h2 id="cta-h">Выберите профессию, на которой держится <span class="hl">реальная отрасль</span></h2>
+    <h2 id="cta-h">Выберите профессию, на которой держится <span class="hl" data-scramble>реальная отрасль</span></h2>
     <div class="hero__cta"><a class="btn btn--accent btn--lg" href="admission.html">Поступающему <span aria-hidden="true">→</span></a><a class="btn btn--ghost btn--lg" href="institutes.html">Институты</a></div>
   </div>
 </section>
@@ -1056,11 +1060,17 @@ html.a11y-im *, html.a11y-im *::before, html.a11y-im *::after { animation: none 
     if (reduce || el.dataset.scrambled) return;
     el.dataset.scrambled = '1';
     const text = el.textContent, abc = 'АБВГДЕЖЗИКЛМНОПРСТУФХЦЧШЭЮЯ0123456789', t0 = performance.now();
-    el.style.minWidth = el.offsetWidth + 'px';
+    const nodes = text.split(/(\s+)/).filter(Boolean).map((part) => {
+      if (/^\s+$/.test(part)) return document.createTextNode(part);
+      const b = document.createElement('span'); b.textContent = part; b.style.cssText = 'display:inline-block;white-space:nowrap;overflow:clip;overflow-clip-margin:0.12em'; return b; });
+    el.textContent = ''; el.append(...nodes);
+    const boxes = nodes.filter((n) => n.nodeType === 1);
+    boxes.map((b) => b.offsetWidth).forEach((w, i) => { boxes[i].style.width = w + 'px'; });
+    let at = 0; const words = boxes.map((b) => { const w = { b, s: b.textContent, at }; at += w.s.length; return w; });
     (function tick(t) {
-      const p = Math.min((t - t0) / 900, 1);
-      el.textContent = [...text].map((c, i) => (c === ' ' || i < p * text.length ? c : abc[(Math.random() * abc.length) | 0])).join('');
-      if (p < 1) requestAnimationFrame(tick); else el.style.minWidth = '';
+      const p = Math.min((t - t0) / 900, 1), n = p * at;
+      words.forEach((w) => { w.b.textContent = [...w.s].map((c, i) => (w.at + i < n ? c : abc[(Math.random() * abc.length) | 0])).join(''); });
+      if (p < 1) requestAnimationFrame(tick); else el.textContent = text;
     })(t0);
   };
   const io = new IntersectionObserver((entries) => entries.forEach((e) => {
